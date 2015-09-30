@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Tzvetan Mikov.
+// Copyright (c) 2015 Tzvetan Mikov and contributors (see AUTHORS).
 // Licensed under the Apache License v2.0. See LICENSE in the project
 // root for complete license information.
 
@@ -14,13 +14,13 @@ void mathInitRandom ()
 #ifdef HAVE_SRANDOMDEV
     ::srandomdev();
 #else
-    ::srandom((unsigned)::time(NULL));
+    ::srand((unsigned)::time(NULL));
 #endif
 }
 
 double mathRandom ()
 {
-    return (double)::random() / ((double)RAND_MAX+1);
+    return (double)::rand() / ((double)RAND_MAX+1);
 }
 
 }; // namespace js
