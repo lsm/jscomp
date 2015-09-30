@@ -4,11 +4,11 @@ var name = process.argv[2]
 console.error("Generate API skeletons for %s", name);
 
 
-function printCode(name, childName)
+function printCode(name, childName, objName)
 {
     var fnName = [name.toLowerCase(), childName.toLowerCase()].join("_")
     var tpl = "hidden(%s, \"%s\", function %s(x)\n{\n\n});\n\n"
-    var code = util.format(tpl, name, childName, fnName)
+    var code = util.format(tpl, objName || name, childName, fnName)
     console.log(code);
 }
 
@@ -30,5 +30,5 @@ loop(global[name], function(childName)
 
 loop(global[name].prototype, function(childName)
 {
-    printCode(name, childName)
+    printCode(name, childName, name + ".prototype")
 })
