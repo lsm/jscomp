@@ -9,6 +9,111 @@ Date = function Date(year, month, date, hours, minutes, seconds, ms)
 
 };
 
+// private functions and consts
+// @todo where should we put them?
+
+var MS_PER_DAY = 86400000;
+
+function day(t)
+{
+    if (isNaN(t))
+        return NaN;
+
+    return Math.floor(t / MS_PER_DAY)
+}
+
+function timeWithinDay(t)
+{
+    if (isNaN(t))
+        return NaN;
+
+    return t % MS_PER_DAY;
+}
+
+function daysInYear(y)
+{
+    if (isNaN(y))
+        return NaN;
+
+    var m4 = y % 4;
+    var m100 = y % 100;
+    var m400 = y % 400;
+
+    if (m4 !== 0 || (m100 === 0 && m400 !== 0))
+        return 365;
+    else if (m400 === 0 || (0 === m4 && 0 !== m100))
+        return 366;
+}
+
+function dayFromYear(y)
+{
+    if (isNaN(y))
+        return NaN;
+
+    return 365 * (y - 1970) + Math.floor((y - 1969) / 4) - Math.floor((y - 1901) / 100) + Math.floor((y - 1601) / 400)
+}
+
+function timeFromYear(y) {
+    return MS_PER_DAY * dayFromYear(y);
+}
+
+function yearFromTime(t) {
+
+}
+
+function inLeapYear(t) {
+
+    var d = daysInYear(yearFromTime(t));
+
+    if (d === 365)
+        return 0;
+    else if (d === 366)
+        return 1;
+}
+
+function dayWithInYear(t) {
+    return day(t) - dayFromYear(yearFromTime(t))
+}
+
+function monthFromTime(t) {
+
+    if (isNaN(t))
+        return NaN;
+
+    var d = dayWithInYear(t);
+    var l = inLeapYear(t);
+
+    switch(true) {
+        case 0 <= d && d < 31:
+            return 0;
+        case 31 <= d && d < 59 + l:
+            return 1;
+        case 59 + l <= d && d < 90 + l:
+            return 2;
+        case 90 + l <= d && d < 120 + l:
+            return 3;
+        case 120 + l <= d && d < 151 + l:
+            return 4;
+        case 151 + l <= d && d < 181 + l:
+            return 5;
+        case 181 + l <= d && d < 212 + l:
+            return 6;
+        case 212 + l <= d && d < 243 + l:
+            return 7;
+        case 243 + l <= d && d < 273 + l:
+            return 8;
+        case 273 + l <= d && d < 304 + l:
+            return 9;
+        case 304 + l <= d && d < 334 + l:
+            return 10;
+        case 334 + l <= d && d < 365 + l:
+            return 11;
+    }
+
+}
+
+// static functions
+
 hidden(Date, "UTC", function date_utc(x)
 {
 
