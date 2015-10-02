@@ -13,6 +13,9 @@ Date = function Date(year, month, date, hours, minutes, seconds, ms)
 // @todo where should we put them?
 
 var MS_PER_DAY = 86400000;
+var MS_PER_HOUR = 3600000;
+var MS_PER_MIN = 60000;
+var MS_PER_SEC = 1000;
 
 function day(t)
 {
@@ -53,16 +56,28 @@ function dayFromYear(y)
     return 365 * (y - 1970) + Math.floor((y - 1969) / 4) - Math.floor((y - 1901) / 100) + Math.floor((y - 1601) / 400)
 }
 
-function timeFromYear(y) {
+function timeFromYear(y)
+{
     return MS_PER_DAY * dayFromYear(y);
 }
 
-function yearFromTime(t) {
+// http://www.ecma-international.org/ecma-262/5.1/#sec-15.9.1.3
+function yearFromTime(t)
+{
+    if (isNaN(t))
+        return NaN;
 
+    var y = Math.floor(t / 366 / MS_PER_DAY) + 1970;
+
+    while (timeFromYear(y) <= t) {
+        y++;
+    }
+
+    return y - 1;
 }
 
-function inLeapYear(t) {
-
+function inLeapYear(t)
+{
     var d = daysInYear(yearFromTime(t));
 
     if (d === 365)
@@ -71,12 +86,13 @@ function inLeapYear(t) {
         return 1;
 }
 
-function dayWithInYear(t) {
+function dayWithInYear(t)
+{
     return day(t) - dayFromYear(yearFromTime(t))
 }
 
-function monthFromTime(t) {
-
+function monthFromTime(t)
+{
     if (isNaN(t))
         return NaN;
 
@@ -110,6 +126,135 @@ function monthFromTime(t) {
             return 11;
     }
 
+}
+
+function dateFromTime(t)
+{
+    if (isNaN(t))
+        return NaN;
+
+    var d = dayWithInYear(t);
+    var m = monthFromTime(t);
+    var l = inLeapYear(t);
+
+    switch(m) {
+        case 0:
+            return d + 1;
+        case 1:
+            return d - 30;
+        case 2:
+            return d - 58 - l;
+        case 3:
+            return d - 89 - l;
+        case 4:
+            return d - 119 - l;
+        case 5:
+            return d - 150 - l;
+        case 6:
+            return d - 180 - l;
+        case 7:
+            return d - 211 - l;
+        case 8:
+            return d - 242 - l;
+        case 9:
+            return d - 272 - l;
+        case 10:
+            return d - 303 - l;
+        case 11:
+            return d - 333 - l;
+    }
+}
+
+function weekDay(t)
+{
+    return (day(t) + 4) % 7;
+}
+
+// http://www.ecma-international.org/ecma-262/5.1/#sec-15.9.1.7
+function localTZA()
+{
+
+}
+
+// http://www.ecma-international.org/ecma-262/5.1/#sec-15.9.1.8
+function daylightSavingTA()
+{
+
+}
+
+function hourFromTime(t)
+{
+    return Math.floor(t / MS_PER_HOUR) % 24;
+}
+
+function minFromTime(t)
+{
+    return Math.floor(t / MS_PER_MIN) % 60;
+}
+
+function secFromTime(t)
+{
+    return Math.floor(t / MS_PER_SEC) % 60;
+}
+
+function msFromTime(t)
+{
+    return t % MS_PER_SEC;
+}
+
+// http://www.ecma-international.org/ecma-262/5.1/#sec-15.9.1.11
+// @todo Use `ToInteger` according to the specs.
+function makeTime(hour, min, sec, ms)
+{
+    var h = parseInt(hour, 10);
+    var m = parseInt(min, 10);
+    var s = parseInt(sec, 10);
+    var milli = parseInt(ms, 10);
+
+    if (isNaN(h) || isNaN(m) || isNaN(s) || isNaN(milli))
+        return NaN;
+
+    var t = h * MS_PER_HOUR + m * MS_PER_MIN + s * MS_PER_SEC + milli;
+    return t;
+}
+
+function makeDay(year, month, date)
+{
+    var y = parseInt(year, 10);
+    var m = parseInt(month, 10);
+    var dt = parseInt(date, 10);
+
+    if (isNaN(y) || isNaN(m) || isNaN(dt))
+        return NaN;
+
+    var ym = y + Math.floor(m / 12);
+    var mn = m % 12;
+    var md = (mn === 1 ? 28 : 30) * mn;
+
+    var t = ((ym - 1970) * 365 + md + dt) * MS_PER_DAY;
+
+    while(yearFromTime(t) <= ym && monthFromTime(t) <= mn && dateFromTime(t) <= 1)
+    {
+        t += MS_PER_DAY;
+    }
+
+    t -= MS_PER_DAY;
+
+    if (yearFromTime(t) === ym && monthFromTime(t) === mn && dateFromTime(t) === 1)
+        return day(t) + dt - 1;
+    else
+        return NaN;
+}
+
+function makeDate(day, time)
+{
+    var d = parseInt(day, 10);
+    var m = parseInt(time, 10);
+
+    if (isNaN(d) || isNaN(m))
+        return NaN;
+
+    return d * MS_PER_DAY + m;
 }
 
 // static functions
